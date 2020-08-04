@@ -26,7 +26,7 @@ class Utils{
 
             val now = System.currentTimeMillis()
             if (time > now || time <= 0) {
-                return null
+                return "just now"
             }
 
 
