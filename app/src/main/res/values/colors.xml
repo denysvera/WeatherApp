@@ -7,4 +7,5 @@
     <color name="cloudy">#54717A</color>
     <color name="rainy">#57575D</color>
     <color name="white">#FFFFFF</color>
+    <color name="colorDivider">#BDBDBD</color>
 </resources>

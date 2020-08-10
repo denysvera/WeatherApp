@@ -14,8 +14,29 @@ data class ForecastListItem(val main: Main,
                             val visibility: Int,
                             @Json(name = "dt_txt")
                             val dateTime: String): Parcelable{
-
+    var isMoreDetailsShown = false
+    var dayForecastList = listOf<DayForecastItem>()
     fun getDay():String{
         return Utils.formatDate(dateTime,"yyyy-MM-dd HH:mm:ss","EEEE")
+    }
+    fun getTime():String{
+        return Utils.formatDate(dateTime,"yyyy-MM-dd HH:mm:ss","HH:mm")
+    }
+
+    fun getWindSpeed():String{
+        val speed = wind.speed
+        return "$speed m/s"
+    }
+
+    fun getHumidity(): String{
+        val humidity = main.humidity
+        return "$humidity%"
+    }
+    fun getClouds():String{
+        val clouds = clouds.all
+        return "$clouds%"
+    }
+    fun getDayForecastItem(): DayForecastItem{
+        return DayForecastItem(main.getMaxTempString(),weather[0].icon!!,getTime())
     }
 }

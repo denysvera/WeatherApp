@@ -22,6 +22,7 @@ import com.nativkod.android.weather.databinding.HomeFragmentBinding
 import com.nativkod.android.weather.helpers.GPS_REQUEST
 import com.nativkod.android.weather.helpers.GpsUtils
 import com.nativkod.android.weather.helpers.LOCATION_REQUEST
+import com.nativkod.android.weather.models.DayForecastItem
 import com.nativkod.android.weather.network.OpenWeatherApi
 import com.nativkod.android.weather.repository.WeatherAppRepository
 
@@ -77,11 +78,14 @@ class HomeFragment : Fragment() {
                 }
             }
         })
-        adapter = ForecastWeatherAdapter()
+        adapter = ForecastWeatherAdapter(requireContext())
         binding.forecastList.adapter = adapter
         viewModel.currentForecast.observe(viewLifecycleOwner, Observer {
             if (it !=null){
                 val shortList = it.list.distinctBy{ it.getDay()}
+                for(item in shortList){
+                    item.dayForecastList = it.toDomainForecastWeather().getDayForecast(item.getDay())
+                }
                 adapter.submitList(shortList)
             }
         })

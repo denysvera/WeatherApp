@@ -76,14 +76,17 @@ class WeatherAppRepository (val database: AppDatabase, val service: OpenWeatherA
                     database.forecastWeatherDao().insertForecastWeather(forecastW.toForecastWeatherEntity())
                 }else{
                     var currentLoc = forecastWeather.value!!.city.id
-                    if (currentLoc == forecastW.city.id){
+                    database.forecastWeatherDao().deleteForecastWeather(forecastWeather.value!!.city)
+                    forecastW.currentLocation = true
+                    database.forecastWeatherDao().insertForecastWeather(forecastW.toForecastWeatherEntity())
+                    /*if (currentLoc == forecastW.city.id){
                         forecastW.currentLocation = true
                         database.forecastWeatherDao().insertForecastWeather(forecastW.toForecastWeatherEntity())
                     }else{
                         database.forecastWeatherDao().deleteForecastWeather(forecastWeather.value!!.city)
                         forecastW.currentLocation = true
                         database.forecastWeatherDao().insertForecastWeather(forecastW.toForecastWeatherEntity())
-                    }
+                    }*/
                 }
 
             }catch (ex: Exception){

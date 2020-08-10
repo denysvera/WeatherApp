@@ -49,7 +49,7 @@ fun List<CurrentWeatherEntity>.asCurrentWeatherModel(): List<CurrentWeather>{
 }
 
 
-
+@Parcelize
 @Entity(tableName = "forecastWeather")
 data class ForecastWeatherEntity(
                                 @PrimaryKey
@@ -57,4 +57,12 @@ data class ForecastWeatherEntity(
                                  val city: City,
                                  @TypeConverters(DataConverter::class)
                                  var list: List<ForecastListItem>,
-                                @ColumnInfo(name = "currentLocation")var currentLocation: Boolean?)
+                                @ColumnInfo(name = "currentLocation")var currentLocation: Boolean?): Parcelable{
+    fun toDomainForecastWeather():ForecastWeather{
+        return ForecastWeather(city, list, currentLocation)
+    }
+}
+
+fun List<ForecastWeatherEntity>.asForecastWeatherModel():List<ForecastWeather>{
+    return map { ForecastWeather(city = it.city, list = it.list, currentLocation = it.currentLocation) }
+}

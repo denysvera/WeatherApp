@@ -13,4 +13,14 @@ data class ForecastWeather(val city: City,
     fun toForecastWeatherEntity():ForecastWeatherEntity{
         return ForecastWeatherEntity(city, list,currentLocation)
     }
+
+    fun getDayForecast(day: String): List<DayForecastItem>{
+        var forecast = mutableListOf<DayForecastItem>()
+        for (forecastListItem in list){
+            if (forecastListItem.getDay() == day){
+                forecast.add(forecastListItem.getDayForecastItem())
+            }
+        }
+        return forecast
+    }
 }

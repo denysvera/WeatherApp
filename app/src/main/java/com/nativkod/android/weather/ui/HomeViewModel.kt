@@ -46,6 +46,7 @@ class HomeViewModel(private val weatherAppRepository: WeatherAppRepository, appl
     }
 
     fun refreshData(){
+
         refreshCurrentLocationWeather(locationData.value!!.latitude.toString(),locationData.value!!.longitude.toString())
         refreshCurrentLocationForecast(locationData.value!!.latitude.toString(),locationData.value!!.longitude.toString())
     }

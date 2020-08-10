@@ -1,19 +1,18 @@
 package com.nativkod.android.weather.adapters
 
+import android.content.Context
+import android.net.Uri
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
-import com.nativkod.android.weather.R
+import androidx.recyclerview.widget.*
 import com.nativkod.android.weather.databinding.ForecastItemBinding
 import com.nativkod.android.weather.models.ForecastListItem
-import com.nativkod.android.weather.models.ForecastWeather
 
-class ForecastWeatherAdapter: ListAdapter<ForecastListItem,ForecastWeatherAdapter.ForecastWeatherViewHolder> (ForecastListItemDiffCallback) {
+class ForecastWeatherAdapter(val context: Context): ListAdapter<ForecastListItem,ForecastWeatherAdapter.ForecastWeatherViewHolder> (ForecastListItemDiffCallback) {
 
     override fun onBindViewHolder(holder: ForecastWeatherViewHolder, position: Int) {
-       holder.bind(getItem(position))
+       holder.bind(getItem(position),context)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ForecastWeatherViewHolder {
@@ -22,10 +21,35 @@ class ForecastWeatherAdapter: ListAdapter<ForecastListItem,ForecastWeatherAdapte
 
     class ForecastWeatherViewHolder constructor(var binding: ForecastItemBinding) : RecyclerView.ViewHolder(binding.root){
 
-        fun bind(forecastListItem: ForecastListItem){
+        private lateinit var adapter: DayForecastAdapter
+        fun bind(
+            forecastListItem: ForecastListItem,
+            context: Context
+        ){
             binding.forecastWeatherItem = forecastListItem
             val weather = forecastListItem.weather[0]
-            when (weather.main) {
+            val icon = weather.icon
+            val uri = Uri.parse("android.resource://com.nativkod.android.weather/drawable/m$icon")
+            binding.weatherIcon.setImageURI(uri)
+
+            binding.linearLayout.setOnClickListener{
+                if(forecastListItem.isMoreDetailsShown){
+                    forecastListItem.isMoreDetailsShown = false
+                    binding.dayDetails.visibility = View.GONE
+                }else{
+                    forecastListItem.isMoreDetailsShown = true
+                    binding.dayDetails.visibility = View.VISIBLE
+                }
+            }
+            adapter = DayForecastAdapter()
+            val layoutManager =  LinearLayoutManager(context)
+            layoutManager.orientation = LinearLayoutManager.HORIZONTAL
+            binding.dayForecastList.layoutManager = layoutManager
+            binding.dayForecastList.itemAnimator = DefaultItemAnimator()
+            binding.dayForecastList.adapter = adapter
+            adapter.submitList(forecastListItem.dayForecastList)
+            val name = "clear"
+          /*  when (weather.main) {
                 "Clear" -> {
                     binding.weatherIcon .setImageResource(R.drawable.clear)
                 }
@@ -35,7 +59,7 @@ class ForecastWeatherAdapter: ListAdapter<ForecastListItem,ForecastWeatherAdapte
                 else -> {
                     binding.weatherIcon.setImageResource(R.drawable.rain)
                 }
-            }
+            }*/
             binding.executePendingBindings()
         }
 
