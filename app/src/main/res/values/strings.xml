@@ -3,5 +3,5 @@
     <string name="degree_c">\u2103</string>
     <string name="space">\u0020</string>
     <string name="enable_gps">Please enable your gps</string>
-    <string name="permission_request">App requires location permission</string>
+    <string name="permission_request">App requires location permission to function properly</string>
 </resources>

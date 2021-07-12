@@ -53,7 +53,7 @@ class WeatherAppRepository (val database: AppDatabase, val service: OpenWeatherA
 
 
             }catch (ex: Exception){
-                Log.d("GET_WEATHER_ERROR",ex.message)
+                ex.message?.let { Log.d("GET_WEATHER_ERROR", it) }
             }
         }
     }
@@ -90,7 +90,7 @@ class WeatherAppRepository (val database: AppDatabase, val service: OpenWeatherA
                 }
 
             }catch (ex: Exception){
-                Log.d("WEATHER_FORECAST_ERROR",ex.message)
+                ex.message?.let { Log.d("WEATHER_FORECAST_ERROR", it) }
             }
         }
     }

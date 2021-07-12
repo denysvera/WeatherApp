@@ -57,6 +57,7 @@
                     android:layout_width="50dp"
                     android:layout_height="50dp"
                     android:layout_gravity="center"
+                    app:imageUrl="@{forecastWeatherItem.imageUrl}"
                     android:src="@drawable/clear" />
             </LinearLayout>
 
@@ -121,6 +122,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:textAlignment="textEnd"
                         android:textColor="@color/white"
                         android:text="@{forecastWeatherItem.windSpeed}" />
 
@@ -145,6 +147,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:textAlignment="textEnd"
                         android:textColor="@color/white"
                         android:text="@{forecastWeatherItem.humidity}" />
 
@@ -169,13 +172,17 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:textAlignment="textEnd"
                         android:textColor="@color/white"
-                        android:text="@{forecastWeatherItem.clouds}" />
+                        android:text="@{forecastWeatherItem.cloudsString}" />
 
                 </LinearLayout>
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/dayForecastList"
+                    android:orientation="horizontal"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:listitem="@layout/day_forcast_item"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
             </LinearLayout>

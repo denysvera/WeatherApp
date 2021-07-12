@@ -7,6 +7,8 @@ import android.content.IntentSender
 import android.location.LocationManager
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.IntentSenderRequest
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationServices
@@ -14,7 +16,7 @@ import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.LocationSettingsStatusCodes
 import com.google.android.gms.location.SettingsClient
 
-class GpsUtils(private val context: Context) {
+class GpsUtils(private val context: Context, val checkLocationSettings: ActivityResultLauncher<IntentSenderRequest>) {
 
     private val settingsClient: SettingsClient = LocationServices.getSettingsClient(context)
     private val locationSettingsRequest: LocationSettingsRequest?
@@ -46,7 +48,9 @@ class GpsUtils(private val context: Context) {
                                 // Show the dialog by calling startResolutionForResult(), and check the
                                 // result in onActivityResult().
                                 val rae = e as ResolvableApiException
-                                rae.startResolutionForResult(context, GPS_REQUEST)
+                                val intentSenderRequest = IntentSenderRequest.Builder(rae.resolution).build()
+                                checkLocationSettings.launch(intentSenderRequest)
+                                //rae.startResolutionForResult(context, GPS_REQUEST)
                             } catch (sie: IntentSender.SendIntentException) {
                                 Log.i(TAG, "PendingIntent unable to execute request.")
                             }

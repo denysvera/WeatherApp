@@ -2,7 +2,8 @@ package com.nativkod.android.weather.ui
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
+import android.app.Activity.RESULT_OK
+import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -11,6 +12,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
@@ -19,10 +21,8 @@ import com.nativkod.android.weather.R
 import com.nativkod.android.weather.adapters.ForecastWeatherAdapter
 import com.nativkod.android.weather.database.AppDatabase
 import com.nativkod.android.weather.databinding.HomeFragmentBinding
-import com.nativkod.android.weather.helpers.GPS_REQUEST
 import com.nativkod.android.weather.helpers.GpsUtils
 import com.nativkod.android.weather.helpers.LOCATION_REQUEST
-import com.nativkod.android.weather.models.DayForecastItem
 import com.nativkod.android.weather.network.OpenWeatherApi
 import com.nativkod.android.weather.repository.WeatherAppRepository
 
@@ -36,6 +36,7 @@ class HomeFragment : Fragment() {
     private lateinit var binding: HomeFragmentBinding
     private lateinit var adapter: ForecastWeatherAdapter
     private var isGPSEnabled = false
+    private lateinit var homeActivity: MainActivity
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -43,6 +44,7 @@ class HomeFragment : Fragment() {
     ): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.home_fragment,container, false)
         binding.lifecycleOwner = this
+        homeActivity = activity as MainActivity
         val application = requireNotNull(this.activity).application
         val  database = AppDatabase.getDatabase(application)
 
@@ -51,13 +53,25 @@ class HomeFragment : Fragment() {
         viewModel  = ViewModelProvider(this,viewModelFactory).get(HomeViewModel::class.java)
         binding.viewModel = viewModel
 
-        GpsUtils(requireContext()).turnGPSOn(object : GpsUtils.OnGpsListener {
 
-            override fun gpsStatus(isGPSEnable: Boolean) { isGPSEnabled = isGPSEnable
+        var checkLocationSettings =
+            registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+                if (result.resultCode == RESULT_OK) {
+                    // GPS is turned on in system settings.
+                    isGPSEnabled = true
+                    invokeLocationAction()
+                }else{
+                    homeActivity.finish()
+                }
+            }
+       GpsUtils(requireContext(),checkLocationSettings).turnGPSOn(object : GpsUtils.OnGpsListener {
+
+            override fun gpsStatus(isGPSEnable: Boolean) {
+                isGPSEnabled = isGPSEnable
             }
         })
 
-       // viewModel.refreshCurrentLocationWeather("49.974737","-98.2955146")
+
         viewModel.currentWeather.observe(viewLifecycleOwner, Observer {
             if(it !=null) {
                 binding.lastUpdated.text = it.lastUpdated
@@ -97,8 +111,14 @@ class HomeFragment : Fragment() {
                 }
                 WeatherUpdateStatus.DONE->{
                     binding.progressBar.visibility = View.GONE
+                    viewModel.stopFreshLocation()
                 }
             }
+        })
+
+        viewModel.getLocationData().observe(viewLifecycleOwner, Observer {
+            viewModel.refreshCurrentLocationWeather(it.latitude.toString(),it.longitude.toString())
+            viewModel.refreshCurrentLocationForecast(it.latitude.toString(),it.longitude.toString())
         })
 
         return binding.root
@@ -109,33 +129,25 @@ class HomeFragment : Fragment() {
         super.onStart()
         invokeLocationAction()
     }
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == GPS_REQUEST) {
-                isGPSEnabled = true
-                invokeLocationAction()
-            }
-        }
-    }
+
     private fun invokeLocationAction() {
         when {
-            !isGPSEnabled ->Toast.makeText(requireContext(),getString(R.string.enable_gps),Toast.LENGTH_LONG).show()
+            !isGPSEnabled ->{
+
+                Toast.makeText(requireContext(),getString(R.string.enable_gps),Toast.LENGTH_LONG).show()
+            }
 
             isPermissionsGranted() -> startLocationUpdate()
-
-            shouldShowRequestPermissionRationale() -> Toast.makeText(requireContext(),getString(R.string.permission_request),Toast.LENGTH_LONG).show()
-
-            else -> ActivityCompat.requestPermissions(
-                requireActivity(),
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
-                LOCATION_REQUEST
-            )
+            else -> requestMultiplePermissions.launch(arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ))
         }
     }
 
+
     private fun startLocationUpdate() {
-        viewModel.getLocationData().observe(this, Observer {
+        viewModel.getLocationData().observe(viewLifecycleOwner, Observer {
             viewModel.refreshCurrentLocationWeather(it.latitude.toString(),it.longitude.toString())
             viewModel.refreshCurrentLocationForecast(it.latitude.toString(),it.longitude.toString())
         })
@@ -149,23 +161,17 @@ class HomeFragment : Fragment() {
                     requireContext(),
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 ) == PackageManager.PERMISSION_GRANTED
-    private fun shouldShowRequestPermissionRationale() =
-        ActivityCompat.shouldShowRequestPermissionRationale(
-            requireActivity(),
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) && ActivityCompat.shouldShowRequestPermissionRationale(
-            requireActivity(),
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        )
 
 
-    @SuppressLint("MissingPermission")
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when (requestCode) {
-            LOCATION_REQUEST -> {
-                invokeLocationAction()
+    private val requestMultiplePermissions =   registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+        permissions.entries.forEach {
+            if(it.value){
+                startLocationUpdate()
+            }else{
+                Toast.makeText(requireContext(),getString(R.string.permission_request),Toast.LENGTH_LONG).show()
             }
+
         }
     }
+
 }

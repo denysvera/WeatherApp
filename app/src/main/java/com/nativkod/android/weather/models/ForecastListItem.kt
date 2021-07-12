@@ -32,11 +32,15 @@ data class ForecastListItem(val main: Main,
         val humidity = main.humidity
         return "$humidity%"
     }
-    fun getClouds():String{
+    fun getCloudsString():String{
         val clouds = clouds.all
         return "$clouds%"
     }
     fun getDayForecastItem(): DayForecastItem{
         return DayForecastItem(main.getMaxTempString(),weather[0].icon!!,getTime())
+    }
+    fun getImageUrl():String{
+        val icon = weather[0].icon
+        return "https://openweathermap.org/img/wn/$icon@2x.png"
     }
 }

@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 
 class LocationLiveData(context: Context) : LiveData<LocationModel>() {
 
-    private var fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+    var fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
 
     override fun onInactive() {
         super.onInactive()
@@ -34,14 +34,24 @@ class LocationLiveData(context: Context) : LiveData<LocationModel>() {
     }
 
     @SuppressLint("MissingPermission")
-    private fun startLocationUpdates() {
+     fun startLocationUpdates() {
         fusedLocationClient.requestLocationUpdates(
             locationRequest,
             locationCallback,
             null
         )
     }
-
+    @SuppressLint("MissingPermission")
+    fun getCurrentLocation(){
+        fusedLocationClient.requestLocationUpdates(
+            locationCurrentRequest,
+            locationCallback,
+            null
+        )
+    }
+    fun stopLocationUpdates(){
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+    }
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult?) {
             locationResult ?: return
@@ -60,8 +70,14 @@ class LocationLiveData(context: Context) : LiveData<LocationModel>() {
 
     companion object {
         val locationRequest: LocationRequest = LocationRequest.create().apply {
-            interval = TimeUnit.MINUTES.toMillis(3)
-            fastestInterval = TimeUnit.MINUTES.toMillis(2)
+            interval = TimeUnit.MINUTES.toMillis(2)
+            fastestInterval = TimeUnit.SECONDS.toMillis(2)
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        }
+
+        val locationCurrentRequest: LocationRequest = LocationRequest.create().apply {
+            interval = TimeUnit.SECONDS.toMillis(2)
+            fastestInterval = TimeUnit.SECONDS.toMillis(1)
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
     }

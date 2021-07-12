@@ -25,9 +25,6 @@ class DayForecastAdapter : ListAdapter<DayForecastItem, DayForecastAdapter.DayFo
 
         fun bind(dayForecastItem: DayForecastItem){
             binding.dayForecast = dayForecastItem
-            val icon = dayForecastItem.weatherIcon
-            val uri = Uri.parse("android.resource://com.nativkod.android.weather/drawable/m$icon")
-            binding.weatherIcon.setImageURI(uri)
             binding.executePendingBindings()
         }
         companion object{

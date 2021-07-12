@@ -26,6 +26,8 @@ class HomeViewModel(private val weatherAppRepository: WeatherAppRepository, appl
 
     private val locationData = LocationLiveData(application)
     fun getLocationData() = locationData
+
+
     fun refreshCurrentLocationWeather(lat: String, lon: String){
         coroutineScope.launch {
             _status.value = WeatherUpdateStatus.LOADING
@@ -46,8 +48,13 @@ class HomeViewModel(private val weatherAppRepository: WeatherAppRepository, appl
     }
 
     fun refreshData(){
-
-        refreshCurrentLocationWeather(locationData.value!!.latitude.toString(),locationData.value!!.longitude.toString())
-        refreshCurrentLocationForecast(locationData.value!!.latitude.toString(),locationData.value!!.longitude.toString())
+        locationData.getCurrentLocation()
     }
+
+    fun stopFreshLocation(){
+        locationData.stopLocationUpdates()
+    }
+
+
+
 }

@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.*
 import com.nativkod.android.weather.databinding.ForecastItemBinding
+import com.nativkod.android.weather.helpers.SpanningLinearLayoutManager
 import com.nativkod.android.weather.models.ForecastListItem
 
 class ForecastWeatherAdapter(val context: Context): ListAdapter<ForecastListItem,ForecastWeatherAdapter.ForecastWeatherViewHolder> (ForecastListItemDiffCallback) {
@@ -27,11 +28,6 @@ class ForecastWeatherAdapter(val context: Context): ListAdapter<ForecastListItem
             context: Context
         ){
             binding.forecastWeatherItem = forecastListItem
-            val weather = forecastListItem.weather[0]
-            val icon = weather.icon
-            val uri = Uri.parse("android.resource://com.nativkod.android.weather/drawable/m$icon")
-            binding.weatherIcon.setImageURI(uri)
-
             binding.linearLayout.setOnClickListener{
                 if(forecastListItem.isMoreDetailsShown){
                     forecastListItem.isMoreDetailsShown = false
@@ -42,24 +38,12 @@ class ForecastWeatherAdapter(val context: Context): ListAdapter<ForecastListItem
                 }
             }
             adapter = DayForecastAdapter()
-            val layoutManager =  LinearLayoutManager(context)
+            val layoutManager =  SpanningLinearLayoutManager(context)
             layoutManager.orientation = LinearLayoutManager.HORIZONTAL
             binding.dayForecastList.layoutManager = layoutManager
             binding.dayForecastList.itemAnimator = DefaultItemAnimator()
             binding.dayForecastList.adapter = adapter
             adapter.submitList(forecastListItem.dayForecastList)
-            val name = "clear"
-          /*  when (weather.main) {
-                "Clear" -> {
-                    binding.weatherIcon .setImageResource(R.drawable.clear)
-                }
-                "Clouds" -> {
-                    binding.weatherIcon.setImageResource(R.drawable.partly_sunny)
-                }
-                else -> {
-                    binding.weatherIcon.setImageResource(R.drawable.rain)
-                }
-            }*/
             binding.executePendingBindings()
         }
 
