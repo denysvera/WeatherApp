@@ -7,15 +7,17 @@ import androidx.lifecycle.Transformations
 import com.nativkod.android.weather.database.AppDatabase
 import com.nativkod.android.weather.database.CurrentWeatherEntity
 import com.nativkod.android.weather.database.asCurrentWeatherModel
-import com.nativkod.android.weather.helpers.API_KEY
+import com.nativkod.android.weather.helpers.Constants
 import com.nativkod.android.weather.helpers.UNIT
 import com.nativkod.android.weather.models.CurrentWeather
 
-import com.nativkod.android.weather.network.OpenWeatherApiService
+import com.nativkod.android.weather.network.OpenWeatherApiServiceHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
-class WeatherAppRepository (val database: AppDatabase, val service: OpenWeatherApiService){
+class WeatherAppRepository  @Inject constructor (val database: AppDatabase, val service: OpenWeatherApiServiceHelper){
+
 
      val currentWeather = database.currentWeatherDao().getCurrentWeather()
 
@@ -25,7 +27,7 @@ class WeatherAppRepository (val database: AppDatabase, val service: OpenWeatherA
     suspend fun getCurrentLocWeather(lat: String, lon: String){
 
         withContext(Dispatchers.IO){
-            val currentWeatherDef = service.getLocationCurrentWeather(lat,lon, UNIT,API_KEY)
+            val currentWeatherDef = service.getLocationCurrentWeather(lat,lon, UNIT,Constants.API_KEY)
 
             try {
                 val currentW = currentWeatherDef.await()
@@ -67,7 +69,7 @@ class WeatherAppRepository (val database: AppDatabase, val service: OpenWeatherA
 
     suspend fun getCurrentLocForecast(lat: String, lon: String){
         withContext(Dispatchers.IO){
-            val forecastWeatherDef = service.getLocationForecastWeather(lat,lon,UNIT,API_KEY)
+            val forecastWeatherDef = service.getLocationForecastWeather(lat,lon,UNIT,Constants.API_KEY)
             try {
 
                 val forecastW = forecastWeatherDef.await()
@@ -79,14 +81,6 @@ class WeatherAppRepository (val database: AppDatabase, val service: OpenWeatherA
                     database.forecastWeatherDao().deleteForecastWeather(forecastWeather.value!!.city)
                     forecastW.currentLocation = true
                     database.forecastWeatherDao().insertForecastWeather(forecastW.toForecastWeatherEntity())
-                    /*if (currentLoc == forecastW.city.id){
-                        forecastW.currentLocation = true
-                        database.forecastWeatherDao().insertForecastWeather(forecastW.toForecastWeatherEntity())
-                    }else{
-                        database.forecastWeatherDao().deleteForecastWeather(forecastWeather.value!!.city)
-                        forecastW.currentLocation = true
-                        database.forecastWeatherDao().insertForecastWeather(forecastW.toForecastWeatherEntity())
-                    }*/
                 }
 
             }catch (ex: Exception){
@@ -94,8 +88,5 @@ class WeatherAppRepository (val database: AppDatabase, val service: OpenWeatherA
             }
         }
     }
-
-
-   // val currentWeatherEntity = database.currentWeatherDao().
 
 }

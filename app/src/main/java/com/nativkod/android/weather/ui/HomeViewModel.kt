@@ -1,22 +1,20 @@
 package com.nativkod.android.weather.ui
 
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.*
 import com.nativkod.android.weather.database.CurrentWeatherEntity
 import com.nativkod.android.weather.helpers.LocationLiveData
 import com.nativkod.android.weather.repository.WeatherAppRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 enum class WeatherUpdateStatus {LOADING, ERROR, DONE}
-class HomeViewModel(private val weatherAppRepository: WeatherAppRepository, application: Application) : AndroidViewModel(application) {
-    private var viewModelJob = Job()
-    private val coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
+@HiltViewModel
+class HomeViewModel  @Inject constructor (private val weatherAppRepository: WeatherAppRepository, application: Application) : AndroidViewModel(application) {
     private val _status = MutableLiveData<WeatherUpdateStatus>()
     val status: LiveData<WeatherUpdateStatus>
         get() = _status
@@ -29,7 +27,7 @@ class HomeViewModel(private val weatherAppRepository: WeatherAppRepository, appl
 
 
     fun refreshCurrentLocationWeather(lat: String, lon: String){
-        coroutineScope.launch {
+        viewModelScope.launch {
             _status.value = WeatherUpdateStatus.LOADING
             weatherAppRepository.getCurrentLocWeather(lat, lon)
             _status.value = WeatherUpdateStatus.DONE
@@ -37,12 +35,12 @@ class HomeViewModel(private val weatherAppRepository: WeatherAppRepository, appl
     }
 
     fun refreshCurrentLocationForecast(lat: String, lon: String){
-        coroutineScope.launch {
+        viewModelScope.launch {
             weatherAppRepository.getCurrentLocForecast(lat, lon)
         }
     }
     fun getCurrentWeather(townId: Int){
-        coroutineScope.launch {
+        viewModelScope.launch {
             _currentWeather.value = weatherAppRepository.getCurrentWeather(townId).value
         }
     }
@@ -54,7 +52,5 @@ class HomeViewModel(private val weatherAppRepository: WeatherAppRepository, appl
     fun stopFreshLocation(){
         locationData.stopLocationUpdates()
     }
-
-
 
 }

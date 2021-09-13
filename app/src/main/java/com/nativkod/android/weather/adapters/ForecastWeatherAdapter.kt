@@ -1,7 +1,6 @@
 package com.nativkod.android.weather.adapters
 
 import android.content.Context
-import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -61,7 +60,7 @@ class ForecastWeatherAdapter(val context: Context): ListAdapter<ForecastListItem
         }
 
         override fun areContentsTheSame(oldItem: ForecastListItem, newItem: ForecastListItem): Boolean {
-            return oldItem.dateTime == newItem.dateTime
+            return oldItem.dt_txt == newItem.dt_txt
         }
 
     }

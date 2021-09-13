@@ -1,10 +1,9 @@
 package com.nativkod.android.weather.models
 
 import android.os.Parcelable
+import com.google.gson.annotations.SerializedName
 import com.nativkod.android.weather.helpers.Utils
-import com.squareup.moshi.Json
-import kotlinx.android.parcel.Parcelize
-import java.time.LocalDate
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class ForecastListItem(val main: Main,
@@ -12,15 +11,24 @@ data class ForecastListItem(val main: Main,
                             val clouds: Clouds,
                             val wind: Wind,
                             val visibility: Int,
-                            @Json(name = "dt_txt")
-                            val dateTime: String): Parcelable{
+                            val dt_txt: String?): Parcelable{
     var isMoreDetailsShown = false
     var dayForecastList = listOf<DayForecastItem>()
     fun getDay():String{
-        return Utils.formatDate(dateTime,"yyyy-MM-dd HH:mm:ss","EEEE")
+        return if (dt_txt != null){
+            Utils.formatDate(dt_txt,"yyyy-MM-dd HH:mm:ss","EEEE")
+        }else{
+            ""
+        }
+
     }
     fun getTime():String{
-        return Utils.formatDate(dateTime,"yyyy-MM-dd HH:mm:ss","HH:mm")
+
+        return if(dt_txt != null) {
+            Utils.formatDate(dt_txt,"yyyy-MM-dd HH:mm:ss","HH:mm")
+        }else{
+            ""
+        }
     }
 
     fun getWindSpeed():String{

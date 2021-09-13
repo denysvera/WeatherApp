@@ -53,7 +53,6 @@ class Utils{
         }
     }
 }
-const val API_KEY = "fcc325db55bf544451270791066221dd"
 const val UNIT = "metric"
 const val LOCATION_REQUEST = 100
 const val GPS_REQUEST = 101

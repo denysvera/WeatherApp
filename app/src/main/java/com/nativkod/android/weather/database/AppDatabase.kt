@@ -12,21 +12,5 @@ import com.nativkod.android.weather.helpers.DataConverter
 abstract class AppDatabase : RoomDatabase(){
     abstract fun currentWeatherDao(): CurrentWeatherDao
     abstract fun forecastWeatherDao(): ForecastWeatherDao
-    companion object{
-        private var INSTANCE: AppDatabase? = null
 
-        fun getDatabase(context: Context): AppDatabase?{
-            if(INSTANCE == null){
-                synchronized(AppDatabase::class){
-                    INSTANCE = Room.databaseBuilder(context.applicationContext,AppDatabase::class.java,"weather.db")
-                        .fallbackToDestructiveMigration()
-                        .build()
-                }
-            }
-            return INSTANCE
-        }
-        fun destroyDataBase(){
-            INSTANCE = null
-        }
-    }
 }
