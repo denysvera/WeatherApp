@@ -15,6 +15,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.nativkod.android.weather.R
@@ -23,16 +24,16 @@ import com.nativkod.android.weather.database.AppDatabase
 import com.nativkod.android.weather.databinding.HomeFragmentBinding
 import com.nativkod.android.weather.helpers.GpsUtils
 import com.nativkod.android.weather.helpers.LOCATION_REQUEST
-import com.nativkod.android.weather.network.OpenWeatherApi
-import com.nativkod.android.weather.repository.WeatherAppRepository
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class HomeFragment : Fragment() {
 
     companion object {
         fun newInstance() = HomeFragment()
     }
 
-    private lateinit var viewModel: HomeViewModel
+    private val viewModel: HomeViewModel by viewModels()
     private lateinit var binding: HomeFragmentBinding
     private lateinit var adapter: ForecastWeatherAdapter
     private var isGPSEnabled = false
@@ -45,12 +46,7 @@ class HomeFragment : Fragment() {
         binding = DataBindingUtil.inflate(inflater, R.layout.home_fragment,container, false)
         binding.lifecycleOwner = this
         homeActivity = activity as MainActivity
-        val application = requireNotNull(this.activity).application
-        val  database = AppDatabase.getDatabase(application)
 
-        val weatherAppRepository =  WeatherAppRepository(database!!, OpenWeatherApi.retrofitService)
-        val viewModelFactory = ViewModelFactory(weatherAppRepository,application)
-        viewModel  = ViewModelProvider(this,viewModelFactory).get(HomeViewModel::class.java)
         binding.viewModel = viewModel
 
 
@@ -101,6 +97,8 @@ class HomeFragment : Fragment() {
                     item.dayForecastList = it.toDomainForecastWeather().getDayForecast(item.getDay())
                 }
                 adapter.submitList(shortList)
+            }else{
+                viewModel.refreshData()
             }
         })
 
@@ -153,20 +151,14 @@ class HomeFragment : Fragment() {
         })
     }
     private fun isPermissionsGranted() =
-        ActivityCompat.checkSelfPermission(
-            requireContext(),
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED
+        ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
 
 
     private val requestMultiplePermissions =   registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
         permissions.entries.forEach {
             if(it.value){
-                startLocationUpdate()
+                viewModel.refreshData()
             }else{
                 Toast.makeText(requireContext(),getString(R.string.permission_request),Toast.LENGTH_LONG).show()
             }
